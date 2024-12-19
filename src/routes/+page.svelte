@@ -291,7 +291,7 @@
     identityBuffer.unmap();
 
     /** @type {GPUBindGroup[]} */
-    const textureBindings = [];
+    const textureBindGroups = [];
     {
       for (let i = 0; i < engineHeader.textureCount; i++) {
         const offset = engineHeader.texturePointer + 0x24 * i;
@@ -335,7 +335,7 @@
             },
           ],
         });
-        textureBindings.push(bindGroup);
+        textureBindGroups.push(bindGroup);
       }
     }
 
@@ -352,7 +352,7 @@
      *    id: number;
      *    offset: number;
      *    length: number;
-     *    binding: GPUBindGroup | undefined;
+     *    bindGroup: GPUBindGroup | undefined;
      *   }[];
      * };
      * positionBuffer: GPUBuffer;
@@ -369,7 +369,7 @@
        *    id: number;
        *    offset: number;
        *    length: number;
-       *    binding: GPUBindGroup | undefined;
+       *    bindGroup: GPUBindGroup | undefined;
        *   }[];
        * }[]
        * }
@@ -405,7 +405,7 @@
           indexBuffer,
           textures: tieModel.textures.map((t) => ({
             ...t,
-            binding: textureBindings[t.id],
+            bindGroup: textureBindGroups[t.id],
           })),
         };
       }
@@ -452,7 +452,7 @@
      *    id: number;
      *    offset: number;
      *    length: number;
-     *    binding: GPUBindGroup | undefined;
+     *    bindGroup: GPUBindGroup | undefined;
      *   }[];
      * };
      * positionBuffer: GPUBuffer;
@@ -469,7 +469,7 @@
        *    id: number;
        *    offset: number;
        *    length: number;
-       *    binding: GPUBindGroup | undefined;
+       *    bindGroup: GPUBindGroup | undefined;
        *   }[];
        * }[]
        * }
@@ -508,7 +508,7 @@
           indexBuffer,
           textures: shrubModel.textures.map((t) => ({
             ...t,
-            binding: textureBindings[t.id],
+            bindGroup: textureBindGroups[t.id],
           })),
         };
       }
@@ -556,7 +556,7 @@
      *    id: number;
      *    offset: number;
      *    length: number;
-     *    binding: GPUBindGroup | undefined;
+     *    bindGroup: GPUBindGroup | undefined;
      *   }[];
      * };
      * positionBuffer: GPUBuffer;
@@ -574,7 +574,7 @@
        *    id: number;
        *    offset: number;
        *    length: number;
-       *    binding: GPUBindGroup | undefined;
+       *    bindGroup: GPUBindGroup | undefined;
        *   }[];
        * }[]
        * }
@@ -623,7 +623,7 @@
             indexBuffer,
             textures: mobyModel.textures.map((t) => ({
               ...t,
-              binding: textureBindings[t.id],
+              bindGroup: textureBindGroups[t.id],
             })),
             scale: mobyModel.scale,
           };
@@ -696,7 +696,7 @@
      *     id: number;
      *     offset: number;
      *     length: number;
-     *     binding: GPUBindGroup | undefined;
+     *     bindGroup: GPUBindGroup | undefined;
      *   }[];
      * }[]}
      */
@@ -791,7 +791,7 @@
           indexBuffer,
           textures: textures.map((t) => ({
             ...t,
-            binding: textureBindings[t.id],
+            bindGroup: textureBindGroups[t.id],
           })),
         });
       }
@@ -811,8 +811,8 @@
         passEncoder.setVertexBuffer(1, properTie.positionBuffer);
 
         properTie.mesh.textures.forEach((texture) => {
-          if (!texture.binding) return;
-          passEncoder.setBindGroup(1, texture.binding);
+          if (!texture.bindGroup) return;
+          passEncoder.setBindGroup(1, texture.bindGroup);
 
           passEncoder.setIndexBuffer(properTie.mesh.indexBuffer, "uint16");
           passEncoder.drawIndexed(
@@ -828,8 +828,8 @@
         passEncoder.setVertexBuffer(1, properShrub.positionBuffer);
 
         properShrub.mesh.textures.forEach((texture) => {
-          if (!texture.binding) return;
-          passEncoder.setBindGroup(1, texture.binding);
+          if (!texture.bindGroup) return;
+          passEncoder.setBindGroup(1, texture.bindGroup);
 
           passEncoder.setIndexBuffer(properShrub.mesh.indexBuffer, "uint16");
           passEncoder.drawIndexed(
@@ -845,8 +845,8 @@
         passEncoder.setVertexBuffer(1, properMoby.positionBuffer);
 
         properMoby.mesh.textures.forEach((texture) => {
-          if (!texture.binding) return;
-          passEncoder.setBindGroup(1, texture.binding);
+          if (!texture.bindGroup) return;
+          passEncoder.setBindGroup(1, texture.bindGroup);
 
           passEncoder.setIndexBuffer(properMoby.mesh.indexBuffer, "uint16");
           passEncoder.drawIndexed(
@@ -863,8 +863,8 @@
       for (const tfrag of tfrags) {
         passEncoder.setVertexBuffer(0, tfrag.vertexBuffer);
         tfrag.textures.forEach((texture) => {
-          if (!texture.binding) return;
-          passEncoder.setBindGroup(1, texture.binding);
+          if (!texture.bindGroup) return;
+          passEncoder.setBindGroup(1, texture.bindGroup);
           passEncoder.setIndexBuffer(tfrag.indexBuffer, "uint16");
           passEncoder.drawIndexed(texture.length, 1, texture.offset);
         });

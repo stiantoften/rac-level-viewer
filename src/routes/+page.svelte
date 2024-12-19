@@ -168,7 +168,7 @@
           },
           {
             stepMode: "instance",
-            arrayStride: 16 * 4,
+            arrayStride: 16 * Float32Array.BYTES_PER_ELEMENT,
             attributes: [
               {
                 shaderLocation: 2,
@@ -177,17 +177,17 @@
               },
               {
                 shaderLocation: 3,
-                offset: 4 * 4,
+                offset: 4 * Float32Array.BYTES_PER_ELEMENT,
                 format: "float32x4",
               },
               {
                 shaderLocation: 4,
-                offset: 8 * 4,
+                offset: 8 * Float32Array.BYTES_PER_ELEMENT,
                 format: "float32x4",
               },
               {
                 shaderLocation: 5,
-                offset: 12 * 4,
+                offset: 12 * Float32Array.BYTES_PER_ELEMENT,
                 format: "float32x4",
               },
             ],
@@ -267,7 +267,7 @@
           resource: {
             buffer: cameraBuffer,
             offset: 0,
-            size: 16 * 4, // mat4x4 * Float32
+            size: 16 * Float32Array.BYTES_PER_ELEMENT, // mat4x4 * Float32
           },
         },
         {
@@ -283,7 +283,7 @@
     });
 
     const identityBuffer = device.createBuffer({
-      size: 4 * 4 * 4,
+      size: 16 * Float32Array.BYTES_PER_ELEMENT,
       usage: GPUBufferUsage.VERTEX,
       mappedAtCreation: true,
     });
@@ -408,7 +408,7 @@
         vertexBuffer.unmap();
 
         const indexBuffer = device.createBuffer({
-          size: tieModel.indices.length * 2,
+          size: tieModel.indices.length * Uint16Array.BYTES_PER_ELEMENT,
           usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
           mappedAtCreation: true,
         });
@@ -437,7 +437,7 @@
 
       for (const [modelId, instances] of Object.entries(tieByModelId)) {
         const positionBuffer = device.createBuffer({
-          size: instances.length * 4 * 4 * 4,
+          size: instances.length * 16 * Float32Array.BYTES_PER_ELEMENT, // One mat4 per element
           usage: GPUBufferUsage.VERTEX,
           mappedAtCreation: true,
         });
@@ -511,8 +511,8 @@
 
         const indexBuffer = device.createBuffer({
           size:
-            shrubModel.indices.length * 2 +
-            ((shrubModel.indices.length * 2) % 4),
+            shrubModel.indices.length * Uint16Array.BYTES_PER_ELEMENT +
+            ((shrubModel.indices.length * Uint16Array.BYTES_PER_ELEMENT) % 4),
           usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
           mappedAtCreation: true,
         });
@@ -541,7 +541,7 @@
 
       for (const [modelId, instances] of Object.entries(shrubByModelId)) {
         const positionBuffer = device.createBuffer({
-          size: instances.length * 4 * 4 * 4,
+          size: instances.length * 16 * Float32Array.BYTES_PER_ELEMENT, // One mat4 per element
           usage: GPUBufferUsage.VERTEX,
           mappedAtCreation: true,
         });
@@ -671,7 +671,7 @@
         const mesh = mobyMeshes[Number(modelId)];
 
         const positionBuffer = device.createBuffer({
-          size: instances.length * 4 * 4 * 4,
+          size: instances.length * 16 * Float32Array.BYTES_PER_ELEMENT, // One mat4 per element
           usage: GPUBufferUsage.VERTEX,
           mappedAtCreation: true,
         });
@@ -777,7 +777,7 @@
         }
 
         const vertexBuffer = device.createBuffer({
-          size: vertexCount * 5 * 4,
+          size: vertexCount * 5 * Float32Array.BYTES_PER_ELEMENT,
           usage: GPUBufferUsage.VERTEX,
           mappedAtCreation: true,
         });
@@ -797,7 +797,7 @@
         vertexBuffer.unmap();
 
         const indexBuffer = device.createBuffer({
-          size: indices.length * 2,
+          size: indices.length * Uint16Array.BYTES_PER_ELEMENT,
           usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
           mappedAtCreation: true,
         });

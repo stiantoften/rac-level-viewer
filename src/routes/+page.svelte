@@ -776,29 +776,23 @@
           ff += faceCount;
         }
 
-        const vertexData = new Float32Array(vertexCount * 7);
-        for (let i = 0; i < vertexData.length; i++) {
-          vertexData[i] = engineDv.getFloat32(
-            vertexPointer + vertexIndex * 0x1c + i * 4
-          );
-        }
-
-        const uvData = new Float32Array(vertexCount * 2);
-        for (let i = 0; i < uvData.length; i++) {
-          uvData[i] = engineDv.getFloat32(
-            UVPointer + vertexIndex * 0x08 + i * 4
-          );
-        }
-
         const vertexBuffer = device.createBuffer({
-          size: (vertexData.byteLength / 7) * 3 + uvData.byteLength,
+          size: vertexCount * 5 * 4,
           usage: GPUBufferUsage.VERTEX,
           mappedAtCreation: true,
         });
         const mapping = new Float32Array(vertexBuffer.getMappedRange());
-        for (let i = 0; i < vertexCount; ++i) {
-          mapping.set(vertexData.slice(i * 7, i * 7 + 3), 5 * i);
-          mapping.set(uvData.slice(i * 2, i * 2 + 2), 5 * i + 3);
+        for (let i = 0; i < vertexCount; i++) {
+          mapping.set(
+            [
+              engineDv.getFloat32(vertexPointer + (vertexIndex + i) * 0x1c + 0),
+              engineDv.getFloat32(vertexPointer + (vertexIndex + i) * 0x1c + 4),
+              engineDv.getFloat32(vertexPointer + (vertexIndex + i) * 0x1c + 8),
+              engineDv.getFloat32(UVPointer + (vertexIndex + i) * 0x08 + 0),
+              engineDv.getFloat32(UVPointer + (vertexIndex + i) * 0x08 + 4),
+            ],
+            5 * i
+          );
         }
         vertexBuffer.unmap();
 

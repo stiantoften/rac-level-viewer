@@ -374,22 +374,8 @@
      * instanceCount: Number;
      * }[]}
      */
-    const properTies = [];
+    const ties = [];
     {
-      /**@type {TieModel[]} */
-      const tieModels = [];
-      for (let i = 0; i < engineHeader.tieModelCount; i++) {
-        tieModels.push(
-          new TieModel(engineDv, engineHeader.tieModelPointer + i * 0x40)
-        );
-      }
-
-      const ties = [];
-      for (let i = 0; i < engineHeader.tieCount; i++) {
-        ties.push(new Tie(engineDv, engineHeader.tiePointer + i * 0x70));
-      }
-
-      const groupedTies = Object.groupBy(ties, ({ modelId }) => modelId);
       /**
        * @type {{
        *  indexBuffer: GPUBuffer;
@@ -404,7 +390,11 @@
        * }
        */
       const tieMeshes = [];
-      for (const tieModel of tieModels) {
+      for (let i = 0; i < engineHeader.tieModelCount; i++) {
+        const tieModel = new TieModel(
+          engineDv,
+          engineHeader.tieModelPointer + i * 0x40
+        );
         const vertexBuffer = device.createBuffer({
           size: tieModel.vertexData.byteLength / 2 + tieModel.uvData.byteLength,
           usage: GPUBufferUsage.VERTEX,
@@ -436,9 +426,16 @@
         };
       }
 
-      for (const [modelId, instances] of Object.entries(groupedTies)) {
-        if (!instances) continue;
+      /** @type {Object.<Number, Tie[]>} */
+      const tieByModelId = {};
+      for (let i = 0; i < engineHeader.tieCount; i++) {
+        const tie = new Tie(engineDv, engineHeader.tiePointer + i * 0x70);
 
+        if (!tieByModelId[tie.modelId]) tieByModelId[tie.modelId] = [];
+        tieByModelId[tie.modelId].push(tie);
+      }
+
+      for (const [modelId, instances] of Object.entries(tieByModelId)) {
         const positionBuffer = device.createBuffer({
           size: instances.length * 4 * 4 * 4,
           usage: GPUBufferUsage.VERTEX,
@@ -450,7 +447,7 @@
         }
         positionBuffer.unmap();
 
-        properTies.push({
+        ties.push({
           mesh: tieMeshes[Number(modelId)],
           positionBuffer: positionBuffer,
           instanceCount: instances.length,
@@ -478,21 +475,8 @@
      * instanceCount: Number;
      * }[]}
      */
-    const properShrubs = [];
+    const shrubs = [];
     {
-      const shrubModels = [];
-      for (let i = 0; i < engineHeader.shrubModelCount; i++) {
-        shrubModels.push(
-          new ShrubModel(engineDv, engineHeader.shrubModelPointer + i * 0x40)
-        );
-      }
-
-      const shrubs = [];
-      for (let i = 0; i < engineHeader.shrubCount; i++) {
-        shrubs.push(new Shrub(engineDv, engineHeader.shrubPointer + i * 0x70));
-      }
-
-      const groupedShrubs = Object.groupBy(shrubs, ({ modelId }) => modelId);
       /**
        * @type {{
        *  indexBuffer: GPUBuffer;
@@ -507,7 +491,11 @@
        * }
        */
       const shrubMeshes = [];
-      for (const shrubModel of shrubModels) {
+      for (let i = 0; i < engineHeader.shrubModelCount; i++) {
+        const shrubModel = new ShrubModel(
+          engineDv,
+          engineHeader.shrubModelPointer + i * 0x40
+        );
         const vertexBuffer = device.createBuffer({
           size:
             shrubModel.vertexData.byteLength / 2 + shrubModel.uvData.byteLength,
@@ -515,7 +503,7 @@
           mappedAtCreation: true,
         });
         const mapping = new Float32Array(vertexBuffer.getMappedRange());
-        for (let i = 0; i < shrubModel.vertexData.length / 6; ++i) {
+        for (let i = 0; i < shrubModel.vertexData.length / 6; i++) {
           mapping.set(shrubModel.vertexData.slice(i * 6, i * 6 + 3), 5 * i);
           mapping.set(shrubModel.uvData.slice(i * 2, i * 2 + 2), 5 * i + 3);
         }
@@ -542,21 +530,29 @@
         };
       }
 
-      for (const [modelId, instances] of Object.entries(groupedShrubs)) {
-        if (!instances) continue;
+      /** @type {Object.<Number, Shrub[]>} */
+      const shrubByModelId = {};
+      for (let i = 0; i < engineHeader.shrubCount; i++) {
+        const shrub = new Shrub(engineDv, engineHeader.shrubPointer + i * 0x70);
 
+        if (!shrubByModelId[shrub.modelId]) shrubByModelId[shrub.modelId] = [];
+        shrubByModelId[shrub.modelId].push(shrub);
+      }
+
+      for (const [modelId, instances] of Object.entries(shrubByModelId)) {
         const positionBuffer = device.createBuffer({
           size: instances.length * 4 * 4 * 4,
           usage: GPUBufferUsage.VERTEX,
           mappedAtCreation: true,
         });
+
         const mapping = new Float32Array(positionBuffer.getMappedRange());
         for (const [index, shrub] of instances.entries()) {
           mapping.set(shrub.matrix, index * 16);
         }
         positionBuffer.unmap();
 
-        properShrubs.push({
+        shrubs.push({
           mesh: shrubMeshes[Number(modelId)],
           positionBuffer: positionBuffer,
           instanceCount: instances.length,
@@ -584,7 +580,7 @@
      * instanceCount: Number;
      * }[]}
      */
-    const properMobies = [];
+    const mobies = [];
     {
       /**
        * @type {{
@@ -605,16 +601,15 @@
         const mobyModelCount = engineDv.getUint32(
           engineHeader.mobyModelPointer
         );
-        const mobyModels = [];
         for (let i = 0; i < mobyModelCount; i++) {
           const infoOffset = engineHeader.mobyModelPointer + 4 + i * 8;
           const id = engineDv.getUint32(infoOffset);
           const offset = engineDv.getUint32(infoOffset + 4);
-          if (offset > 0) {
-            mobyModels.push(new MobyModel(engineDv, offset, id));
-          }
-        }
-        for (const mobyModel of mobyModels) {
+
+          if (offset == 0) continue; // Moby has no model
+
+          const mobyModel = new MobyModel(engineDv, offset, id);
+
           const vertexBuffer = device.createBuffer({
             size: mobyModel.vertexData.byteLength / 2,
             usage: GPUBufferUsage.VERTEX,
@@ -652,26 +647,26 @@
           };
         }
       }
-      let groupedMobies;
-      {
-        if (!gameplayHeader.mobyPointer) return;
-        const mobies = [];
-        const mobyCount = gameplayDv.getUint32(gameplayHeader.mobyPointer);
 
-        for (let i = 0; i < mobyCount; i++) {
-          const moby = new Moby(
-            gameplayDv,
-            gameplayHeader.mobyPointer +
-              0x10 +
-              i * (gameNumber === 1 ? 0x78 : 0x88),
-            gameNumber
-          );
-          mobies.push(moby);
-        }
-        groupedMobies = Object.groupBy(mobies, ({ modelId }) => modelId);
+      if (!gameplayHeader.mobyPointer) return;
+      const mobyCount = gameplayDv.getUint32(gameplayHeader.mobyPointer);
+
+      /** @type {Object.<Number, Moby[]>} */
+      const mobyByModelId = {};
+      for (let i = 0; i < mobyCount; i++) {
+        const moby = new Moby(
+          gameplayDv,
+          gameplayHeader.mobyPointer +
+            0x10 +
+            i * (gameNumber === 1 ? 0x78 : 0x88),
+          gameNumber
+        );
+
+        if (!mobyByModelId[moby.modelId]) mobyByModelId[moby.modelId] = [];
+        mobyByModelId[moby.modelId].push(moby);
       }
-      for (const [modelId, instances] of Object.entries(groupedMobies)) {
-        if (!instances) continue;
+
+      for (const [modelId, instances] of Object.entries(mobyByModelId)) {
         if (!mobyMeshes[Number(modelId)]) continue;
         const mesh = mobyMeshes[Number(modelId)];
 
@@ -699,7 +694,7 @@
         }
         positionBuffer.unmap();
 
-        properMobies.push({
+        mobies.push({
           mesh,
           positionBuffer: positionBuffer,
           instanceCount: instances.length,
@@ -836,7 +831,7 @@
       passEncoder.setPipeline(pipeline);
       passEncoder.setBindGroup(0, frameBindGroup);
 
-      for (const properTie of properTies) {
+      for (const properTie of ties) {
         passEncoder.setVertexBuffer(0, properTie.mesh.vertexBuffer);
         passEncoder.setVertexBuffer(1, properTie.positionBuffer);
 
@@ -853,7 +848,7 @@
         });
       }
 
-      for (const properShrub of properShrubs) {
+      for (const properShrub of shrubs) {
         passEncoder.setVertexBuffer(0, properShrub.mesh.vertexBuffer);
         passEncoder.setVertexBuffer(1, properShrub.positionBuffer);
 
@@ -870,7 +865,7 @@
         });
       }
 
-      for (const properMoby of properMobies) {
+      for (const properMoby of mobies) {
         passEncoder.setVertexBuffer(0, properMoby.mesh.vertexBuffer);
         passEncoder.setVertexBuffer(1, properMoby.positionBuffer);
 

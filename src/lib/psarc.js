@@ -40,7 +40,7 @@ export class PSARC {
     this.dv = new DataView(ab, 0);
 
     this.memory = new WebAssembly.Memory({ initial: 160 });
-    this.module = await WebAssembly.instantiateStreaming(fetch("/lzma.wasm"), {
+    this.module = await WebAssembly.instantiateStreaming(fetch("./lzma.wasm"), {
       env: {
         memory: this.memory,
         abort: (

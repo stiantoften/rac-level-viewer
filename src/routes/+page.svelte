@@ -290,33 +290,18 @@
     new Float32Array(identityBuffer.getMappedRange()).set(mat4.identity(), 0);
     identityBuffer.unmap();
 
-    /**
-     * @type {{
-     *  textureId: number;
-     *  bindGroup: GPUBindGroup;
-     * }[]}
-     */
+    /** @type {GPUBindGroup[]} */
     const textureBindings = [];
     {
-      const textureHeaders = [];
       for (let i = 0; i < engineHeader.textureCount; i++) {
         const offset = engineHeader.texturePointer + 0x24 * i;
-        textureHeaders.push({
+        const textureHeader = {
           vramOffset: engineDv.getUint32(offset + 0x00),
           mipmapCount: engineDv.getUint16(offset + 0x04),
-          // off_06: dv.getUint16(offset + 0x06),
-          // off_08: dv.getUint32(offset + 0x08),
-          // off_0c: dv.getUint32(offset + 0x0c),
-          // off_10: dv.getUint32(offset + 0x10),
-          // off_14: dv.getUint32(offset + 0x14),
           width: engineDv.getUint16(offset + 0x18),
           height: engineDv.getUint16(offset + 0x1a),
-          // off_1c: dv.getUint32(offset + 0x1c),
-          // off_20: dv.getUint32(offset + 0x20),
-        });
-      }
-      for (let i = 0; i < textureHeaders.length; i++) {
-        const textureHeader = textureHeaders[i];
+        };
+
         const dataLength =
           (((Math.max(4, textureHeader.width) / 4) *
             Math.max(4, textureHeader.height)) /
@@ -350,7 +335,7 @@
             },
           ],
         });
-        textureBindings.push({ textureId: i, bindGroup });
+        textureBindings.push(bindGroup);
       }
     }
 
@@ -420,8 +405,7 @@
           indexBuffer,
           textures: tieModel.textures.map((t) => ({
             ...t,
-            binding: textureBindings.find((b) => b.textureId === t.id)
-              ?.bindGroup,
+            binding: textureBindings[t.id],
           })),
         };
       }
@@ -524,8 +508,7 @@
           indexBuffer,
           textures: shrubModel.textures.map((t) => ({
             ...t,
-            binding: textureBindings.find((b) => b.textureId === t.id)
-              ?.bindGroup,
+            binding: textureBindings[t.id],
           })),
         };
       }
@@ -640,8 +623,7 @@
             indexBuffer,
             textures: mobyModel.textures.map((t) => ({
               ...t,
-              binding: textureBindings.find((b) => b.textureId === t.id)
-                ?.bindGroup,
+              binding: textureBindings[t.id],
             })),
             scale: mobyModel.scale,
           };
@@ -809,8 +791,7 @@
           indexBuffer,
           textures: textures.map((t) => ({
             ...t,
-            binding: textureBindings.find((b) => b.textureId === t.id)
-              ?.bindGroup,
+            binding: textureBindings[t.id],
           })),
         });
       }

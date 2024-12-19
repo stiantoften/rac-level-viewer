@@ -410,16 +410,20 @@
         };
       }
 
-      /** @type {Object.<Number, Tie[]>} */
-      const tieByModelId = {};
+      /** @type {Map<Number, Tie[]>} */
+      const tiesByModelId = new Map();
       for (let i = 0; i < engineHeader.tieCount; i++) {
         const tie = new Tie(engineDv, engineHeader.tiePointer + i * 0x70);
 
-        if (!tieByModelId[tie.modelId]) tieByModelId[tie.modelId] = [];
-        tieByModelId[tie.modelId].push(tie);
+        const existing = tiesByModelId.get(tie.modelId);
+        if (existing) {
+          existing.push(tie);
+        } else {
+          tiesByModelId.set(tie.modelId, [tie]);
+        }
       }
 
-      for (const [modelId, instances] of Object.entries(tieByModelId)) {
+      for (const [modelId, instances] of tiesByModelId) {
         const positionBuffer = device.createBuffer({
           size: instances.length * 16 * Float32Array.BYTES_PER_ELEMENT, // One mat4 per element
           usage: GPUBufferUsage.VERTEX,
@@ -432,7 +436,7 @@
         positionBuffer.unmap();
 
         ties.push({
-          mesh: tieMeshes[Number(modelId)],
+          mesh: tieMeshes[modelId],
           positionBuffer: positionBuffer,
           instanceCount: instances.length,
         });
@@ -513,16 +517,20 @@
         };
       }
 
-      /** @type {Object.<Number, Shrub[]>} */
-      const shrubByModelId = {};
+      /** @type {Map<Number, Shrub[]>} */
+      const shrubsByModelId = new Map();
       for (let i = 0; i < engineHeader.shrubCount; i++) {
         const shrub = new Shrub(engineDv, engineHeader.shrubPointer + i * 0x70);
 
-        if (!shrubByModelId[shrub.modelId]) shrubByModelId[shrub.modelId] = [];
-        shrubByModelId[shrub.modelId].push(shrub);
+        const existing = shrubsByModelId.get(shrub.modelId);
+        if (existing) {
+          existing.push(shrub);
+        } else {
+          shrubsByModelId.set(shrub.modelId, [shrub]);
+        }
       }
 
-      for (const [modelId, instances] of Object.entries(shrubByModelId)) {
+      for (const [modelId, instances] of shrubsByModelId) {
         const positionBuffer = device.createBuffer({
           size: instances.length * 16 * Float32Array.BYTES_PER_ELEMENT, // One mat4 per element
           usage: GPUBufferUsage.VERTEX,
@@ -536,7 +544,7 @@
         positionBuffer.unmap();
 
         shrubs.push({
-          mesh: shrubMeshes[Number(modelId)],
+          mesh: shrubMeshes[modelId],
           positionBuffer: positionBuffer,
           instanceCount: instances.length,
         });
@@ -636,8 +644,8 @@
       if (!gameplayHeader.mobyPointer) return;
       const mobyCount = gameplayDv.getUint32(gameplayHeader.mobyPointer);
 
-      /** @type {Object.<Number, Moby[]>} */
-      const mobyByModelId = {};
+      /** @type {Map<Number, Moby[]>} */
+      const mobiesByModelId = new Map();
       for (let i = 0; i < mobyCount; i++) {
         const moby = new Moby(
           gameplayDv,
@@ -647,13 +655,17 @@
           gameNumber
         );
 
-        if (!mobyByModelId[moby.modelId]) mobyByModelId[moby.modelId] = [];
-        mobyByModelId[moby.modelId].push(moby);
+        const existing = mobiesByModelId.get(moby.modelId);
+        if (existing) {
+          existing.push(moby);
+        } else {
+          mobiesByModelId.set(moby.modelId, [moby]);
+        }
       }
 
-      for (const [modelId, instances] of Object.entries(mobyByModelId)) {
-        if (!mobyMeshes[Number(modelId)]) continue;
-        const mesh = mobyMeshes[Number(modelId)];
+      for (const [modelId, instances] of mobiesByModelId) {
+        const mesh = mobyMeshes[modelId];
+        if (!mesh) continue;
 
         const positionBuffer = device.createBuffer({
           size: instances.length * 16 * Float32Array.BYTES_PER_ELEMENT, // One mat4 per element

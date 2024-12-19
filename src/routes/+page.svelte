@@ -387,8 +387,8 @@
         });
         const mapping = new Float32Array(vertexBuffer.getMappedRange());
         for (let i = 0; i < tieModel.vertexData.length / 6; ++i) {
-          mapping.set(tieModel.vertexData.slice(i * 6, i * 6 + 3), 5 * i);
-          mapping.set(tieModel.uvData.slice(i * 2, i * 2 + 2), 5 * i + 3);
+          mapping.set(tieModel.vertexData.subarray(i * 6, i * 6 + 3), 5 * i);
+          mapping.set(tieModel.uvData.subarray(i * 2, i * 2 + 2), 5 * i + 3);
         }
         vertexBuffer.unmap();
 
@@ -488,8 +488,8 @@
         });
         const mapping = new Float32Array(vertexBuffer.getMappedRange());
         for (let i = 0; i < shrubModel.vertexData.length / 6; i++) {
-          mapping.set(shrubModel.vertexData.slice(i * 6, i * 6 + 3), 5 * i);
-          mapping.set(shrubModel.uvData.slice(i * 2, i * 2 + 2), 5 * i + 3);
+          mapping.set(shrubModel.vertexData.subarray(i * 6, i * 6 + 3), 5 * i);
+          mapping.set(shrubModel.uvData.subarray(i * 2, i * 2 + 2), 5 * i + 3);
         }
         vertexBuffer.unmap();
 
@@ -600,9 +600,12 @@
           });
           const mapping = new Float32Array(vertexBuffer.getMappedRange());
           for (let i = 0; i < mobyModel.vertexData.length / 10; ++i) {
-            mapping.set(mobyModel.vertexData.slice(i * 10, i * 10 + 3), 5 * i);
             mapping.set(
-              mobyModel.vertexData.slice(i * 10 + 6, i * 10 + 8),
+              mobyModel.vertexData.subarray(i * 10, i * 10 + 3),
+              5 * i
+            );
+            mapping.set(
+              mobyModel.vertexData.subarray(i * 10 + 6, i * 10 + 8),
               5 * i + 3
             );
           }

@@ -86,7 +86,7 @@
     /** @type {{ engine: number; gameplay: number; vram: number; }} */ levelEntries
   ) => {
     loaded = true;
-    tick();
+    await tick();
 
     const t1 = Date.now();
 
@@ -942,7 +942,10 @@
 
 {#if error}
   <h2 class="error">{error}</h2>
-{:else if !loaded}
+{:else if loaded}
+  <canvas></canvas>
+  {xyz}
+{:else}
   <input
     bind:this={fileInput}
     hidden
@@ -975,8 +978,6 @@
     {/if}
   </div>
 {/if}
-<canvas></canvas>
-{xyz}
 
 <style>
   canvas {

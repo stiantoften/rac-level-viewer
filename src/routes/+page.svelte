@@ -914,7 +914,7 @@
   <h2 class="error">{error}</h2>
 {:else if loaded}
   <canvas></canvas>
-  {xyz}
+  <div class="xyz">{xyz}</div>
 {:else}
   <input
     bind:this={fileInput}
@@ -951,8 +951,15 @@
 
 <style>
   canvas {
-    width: 1280px;
-    height: 720px;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+  }
+  .xyz {
+    position: fixed;
+    color: white;
+    padding: 8px;
+    font-weight: 600;
   }
   select {
     padding: 10px;

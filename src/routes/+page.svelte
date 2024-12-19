@@ -904,7 +904,6 @@
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.executeBundles([renderBundle]);
       passEncoder.end();
-      passEncoder.setViewport;
       device.queue.submit([commandEncoder.finish()]);
 
       requestAnimationFrame(frame);

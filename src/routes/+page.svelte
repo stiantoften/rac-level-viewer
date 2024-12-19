@@ -34,6 +34,9 @@
   /** @type {string?} */
   let error;
 
+  /** @type {number} */
+  let gameNumber = 1;
+
   const onChange = async (
     /** @type { Event & {
     currentTarget: EventTarget & HTMLInputElement;
@@ -655,16 +658,14 @@
         const mobies = [];
         const mobyCount = gameplayDv.getUint32(gameplayHeader.mobyPointer);
 
-        const gameNum = 1;
         for (let i = 0; i < mobyCount; i++) {
           const moby = new Moby(
             gameplayDv,
             gameplayHeader.mobyPointer +
               0x10 +
-              i * (gameNum === 1 ? 0x78 : 0x88),
-            gameNum
+              i * (gameNumber === 1 ? 0x78 : 0x88),
+            gameNumber
           );
-
           mobies.push(moby);
         }
         groupedMobies = Object.groupBy(mobies, ({ modelId }) => modelId);
@@ -699,7 +700,7 @@
         positionBuffer.unmap();
 
         properMobies.push({
-          mesh: mobyMeshes[Number(modelId)],
+          mesh,
           positionBuffer: positionBuffer,
           instanceCount: instances.length,
         });
@@ -953,6 +954,11 @@
   <div class="main">
     {#if viableLevels}
       <h3>Select level</h3>
+      <select bind:value={gameNumber}>
+        <option value={1}>Ratchet & Clank</option>
+        <option value={2}>Ratchet & Clank 2</option>
+        <option value={3}>Ratchet & Clank 3</option>
+      </select>
       {#each viableLevels as level}
         <button on:click={() => onLevelSelect(level)}>{level.name}</button>
       {/each}
@@ -976,6 +982,9 @@
   canvas {
     width: 1280px;
     height: 720px;
+  }
+  select {
+    padding: 10px;
   }
   .error {
     color: red;

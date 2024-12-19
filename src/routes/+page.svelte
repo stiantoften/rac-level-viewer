@@ -31,6 +31,9 @@
   /** @type {{ versionMajor: number | undefined; versionMinor: number | undefined; type: string | undefined; fileOffset: number | undefined; tocEntrySize: number | undefined; fileCount: number | undefined; blockSize: any; archiveFlags: number | undefined; blockListOffset: any; blockListBuffer?: any; entry?: any; }} */
   let header;
 
+  /** @type {string?} */
+  let error;
+
   const onChange = async (
     /** @type { Event & {
     currentTarget: EventTarget & HTMLInputElement;
@@ -104,11 +107,18 @@
     const t2 = Date.now();
 
     const canvas = document.querySelector("canvas");
-    if (!canvas) return;
+    if (!canvas) {
+      error = "Could not get canvas";
+      return;
+    }
 
     /** @type GPUAdapter? */
     const adapter = await navigator.gpu?.requestAdapter();
-    if (!adapter) return;
+    if (!adapter) {
+      error =
+        "Could not get adapter. WebGPU might not be supported on this platform.";
+      return;
+    }
 
     /** @type GPUDevice */
     const device = await adapter.requestDevice({
@@ -117,7 +127,11 @@
 
     /** @type GPUCanvasContext? */
     const context = canvas.getContext("webgpu");
-    if (!context) return;
+    if (!context) {
+      error =
+        "Could not get webgpu context. WebGPU might not be supported on this platform.";
+      return;
+    }
 
     const devicePixelRatio = window.devicePixelRatio;
     canvas.width = canvas.clientWidth * devicePixelRatio;
@@ -925,7 +939,9 @@
   };
 </script>
 
-{#if !loaded}
+{#if error}
+  <h2 class="error">{error}</h2>
+{:else if !loaded}
   <input
     bind:this={fileInput}
     hidden
@@ -960,6 +976,9 @@
   canvas {
     width: 1280px;
     height: 720px;
+  }
+  .error {
+    color: red;
   }
   .dropzone {
     height: 200px;

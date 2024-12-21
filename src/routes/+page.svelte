@@ -393,7 +393,9 @@
         vertexBuffer.unmap();
 
         const indexBuffer = device.createBuffer({
-          size: tieModel.indices.length * Uint16Array.BYTES_PER_ELEMENT,
+          size:
+            tieModel.indices.length * Uint16Array.BYTES_PER_ELEMENT +
+            ((tieModel.indices.length * Uint16Array.BYTES_PER_ELEMENT) % 4),
           usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
           mappedAtCreation: true,
         });
@@ -621,8 +623,8 @@
 
           const indexBuffer = device.createBuffer({
             size:
-              mobyModel.indices.length * 2 +
-              ((mobyModel.indices.length * 2) % 4),
+              mobyModel.indices.length * Uint16Array.BYTES_PER_ELEMENT +
+              ((mobyModel.indices.length * Uint16Array.BYTES_PER_ELEMENT) % 4),
             usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
             mappedAtCreation: true,
           });
@@ -794,7 +796,9 @@
         vertexBuffer.unmap();
 
         const indexBuffer = device.createBuffer({
-          size: indices.length * Uint16Array.BYTES_PER_ELEMENT,
+          size:
+            indices.length * Uint16Array.BYTES_PER_ELEMENT +
+            ((indices.length * Uint16Array.BYTES_PER_ELEMENT) % 4),
           usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
           mappedAtCreation: true,
         });
